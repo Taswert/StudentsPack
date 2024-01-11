@@ -158,24 +158,42 @@ private:
 
 class Parent {
 public:
+    Parent(bool isGrandma) {
+        this->isGrandma = isGrandma;
+    }
     void speakAboutExact(Student* child) {
         bool error = true;
         for (int i = 0; i < childs.size(); i++) {
             if (child == childs.at(i)) error = false;
         }
-        if (error) {
-            cout << "This is not my child! (ERROR MESSAGE)" << endl;
-            return;
-        }
+        if (!isGrandma) {
+            if (error) {
+                cout << "This is not my child! (ERROR MESSAGE)" << endl;
+                return;
+            }
 
-        if (!mood && child->getIsExcellent())
-            cout << child->getName() << " is a good student." << endl;
-        else if (mood && !child->getIsExcellent())
-            cout << child->getName() << " is my lovely child!!" << endl;
-        else if (!mood && !child->getIsExcellent())
-            cout << child->getName() << " is my child." << endl;
-        else
-            cout << child->getName() << " is an Excellent student and Excellent child!!!" << endl;
+            if (!mood && child->getIsExcellent())
+                cout << child->getName() << " is a good student." << endl;
+            else if (mood && !child->getIsExcellent())
+                cout << child->getName() << " is my lovely child!!" << endl;
+            else if (!mood && !child->getIsExcellent())
+                cout << child->getName() << " is my child." << endl;
+            else
+                cout << child->getName() << " is an Excellent student and Excellent child!!!" << endl;
+        }
+        else {
+            if (error && mood) {
+                cout << child->getName() << "is a good child, but it's not mine." << endl;
+            }
+            else if (error && !mood) {
+                cout << "Eh, " << child->getName() << " is not a good child and it is not mine." << endl;
+            }
+            else if (!error) {
+                cout << child->getName() << " is the best child!!!" << endl;
+            }
+
+        }
+        
     }
     void speakAboutRandom() {
         int i = rand() % childs.size();
@@ -196,14 +214,19 @@ public:
         if (avg >= 0.5f) avgBool = 1;
         else avgBool = 0;
 
-        if (!mood && avgBool)
-            cout << "They are good students." << endl;
-        else if (mood && !avgBool)
-            cout << "They are my lovely childs!!" << endl;
-        else if (!mood && !avgBool)
-            cout << "They are my childs." << endl;
-        else
-            cout << "They are Excellent students and Excellent childs!!!" << endl;
+        if (!isGrandma) {
+            if (!mood && avgBool)
+                cout << "They are good students." << endl;
+            else if (mood && !avgBool)
+                cout << "They are my lovely childs!!" << endl;
+            else if (!mood && !avgBool)
+                cout << "They are my childs." << endl;
+            else
+                cout << "They are Excellent students and Excellent childs!!!" << endl;
+        }
+        else {
+            cout << "They are the best childs!!!" << endl;
+        }
     }
 
     void addChild(Student* child) {
@@ -216,6 +239,7 @@ public:
 private:
     bool mood;
     std::vector<Student*> childs;
+    bool isGrandma = false;
 };
 
 class ParentsGathering {
@@ -300,13 +324,13 @@ int main()
     cout << "S4 - "; s4->printGrades();
 
 
-    Parent* p1 = new Parent;
+    Parent* p1 = new Parent(false);
     p1->addChild(s1);
     p1->addChild(s2);
     p1->addChild(s3);
     p1->setMood(1);
 
-    Parent* p2 = new Parent;
+    Parent* p2 = new Parent(true);
     p2->addChild(s4);
 
     p1->speakAboutAll();
@@ -319,6 +343,7 @@ int main()
     cout << endl << endl;
     auto g1 = new ParentsGathering;
     g1->addParent(p1);
+    g1->addParent(p2);
     g1->addTeacher(t1);
     g1->beginGathering(lessonsVector);
 
