@@ -6,8 +6,15 @@ using namespace std;
 
 class Student {
 public:
+    Student(std::string name) {
+        this->name = name;
+    }
+
     vector<int>* getGrades() { return &grades; }
     bool getIsExcellent() { return isExcellent; }
+
+    std::string getName() { return name; }
+    void setName(std::string newName) { name = newName; }
 
     void checkIsExcellentNow() {
         isExcellent = true;
@@ -32,6 +39,7 @@ public:
 private:
     vector<int> grades;
     bool isExcellent = true;
+    std::string name;
 };
 
 class Teacher {
@@ -126,11 +134,72 @@ private:
     std::vector<Student*> students;
 };
 
+class Parent {
+public:
+    void speakAboutExact(Student* child) {
+        bool error = true;
+        for (int i = 0; i < childs.size(); i++) {
+            if (child == childs.at(i)) error = false;
+        }
+        if (error) {
+            cout << "This is not my child! (ERROR MESSAGE)" << endl;
+            return;
+        }
+
+        if (!mood && child->getIsExcellent())
+            cout << child->getName() << " is a good student." << endl;
+        else if (mood && !child->getIsExcellent())
+            cout << child->getName() << " is my lovely child!!" << endl;
+        else if (!mood && !child->getIsExcellent())
+            cout << child->getName() << " is my child." << endl;
+        else
+            cout << child->getName() << " is an Excellent student and Excellent child!!!" << endl;
+    }
+    void speakAboutRandom() {
+        int i = rand() % childs.size();
+        speakAboutExact(childs.at(i));
+    }
+    void speakAboutEach() {
+        for (int i = 0; i < childs.size(); i++) {
+            speakAboutExact(childs.at(i));
+        }
+    }
+
+    void speakAboutAll() {
+        float avg = 0.f; bool avgBool = false;
+        for (int i = 0; i < childs.size(); i++) {
+            avg += childs.at(i)->getIsExcellent();
+        }
+        avg = avg / childs.size();
+        if (avg >= 0.5f) avgBool = 1;
+        else avgBool = 0;
+
+        if (!mood && avgBool)
+            cout << "They are good students." << endl;
+        else if (mood && !avgBool)
+            cout << "They are my lovely childs!!" << endl;
+        else if (!mood && !avgBool)
+            cout << "They are my childs." << endl;
+        else
+            cout << "They are Excellent students and Excellent childs!!!" << endl;
+    }
+
+    void addChild(Student* child) {
+        childs.push_back(child);
+    }
+
+    bool getMood() { return mood; }
+    void setMood(bool newMood) { mood = newMood; }
+private:
+    bool mood;
+    std::vector<Student*> childs;
+};
+
 int main()
 {
     srand(time(nullptr));
 
-    Student* s1 = new Student; Student* s2 = new Student; Student* s3 = new Student; Student* s4 = new Student;
+    Student* s1 = new Student("John"); Student* s2 = new Student("Alex"); Student* s3 = new Student("Kate"); Student* s4 = new Student("Rebecca");
     s1->giveGrade(4);
     s1->giveGrade(5);
     s1->printGrades();
@@ -154,8 +223,26 @@ int main()
     cout << "S4 - "; s4->printGrades();
 
 
+    Parent* p1 = new Parent;
+    p1->addChild(s1);
+    p1->addChild(s2);
+    p1->addChild(s3);
+    p1->setMood(1);
+
+    Parent* p2 = new Parent;
+    p2->addChild(s4);
+
+    p1->speakAboutAll();
+    p1->speakAboutRandom();
+    p1->speakAboutExact(s1);
+    p1->speakAboutEach();
+    p1->speakAboutExact(s4);
+
+    p2->speakAboutEach();
+
 
     delete s1; delete s2; delete s3; delete s4;
     delete t1;
     delete l1;
+    delete p1; delete p2;
 }
