@@ -30,6 +30,13 @@ private:
     bool isExcellent = false;
 };
 
+class Teacher {
+public:
+    void giveGradeToStudent(Student& student, int grade) {
+        student.giveGrade(grade);
+    }
+};
+
 int main()
 {
     Student s1;
@@ -40,4 +47,12 @@ int main()
     }
     cout << endl;
     cout << (s1.getIsExcellent() ? "Excellent Student!" : "Not excellent Student.") << endl;
+
+    Teacher t1;
+    t1.giveGradeToStudent(s1, 5);
+
+    for (int i = 0; i < s1.getGrades()->size(); i++) {
+        cout << s1.getGrades()->at(i) << " ";
+    }
+    cout << endl;
 }
