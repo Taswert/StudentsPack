@@ -1,22 +1,20 @@
 ﻿#include <iostream>
 #include <vector>
+#include <ctime>
+#include <cstdlib>
 using namespace std;
 
 class Student {
 public:
-    vector<int>* getGrades() {
-        return &grades;
-    }
-
-    bool getIsExcellent() {
-        return isExcellent;
-    }
+    vector<int>* getGrades() { return &grades; }
+    bool getIsExcellent() { return isExcellent; }
 
     void checkIsExcellentNow() {
         isExcellent = true;
         for (int i = 0; i < grades.size(); i++) {
             if (grades.at(i) != 5) {
                 isExcellent = false;
+                return;
             }
         }
     }
@@ -25,6 +23,7 @@ public:
         grades.push_back(grade);
         checkIsExcellentNow();
     }
+
 private:
     vector<int> grades;
     bool isExcellent = false;
@@ -32,9 +31,23 @@ private:
 
 class Teacher {
 public:
-    void giveGradeToStudent(Student& student, int grade) {
+    bool getMood() { return mood; }
+    void setMood(bool newMood) { mood = newMood; }
+
+    void giveGradeToStudent(Student& student) {
+        srand(time(nullptr));
+        int grade = 5;
+        if (!mood && student.getIsExcellent())
+            grade = rand() % 2 + 4;
+        else if (mood && !student.getIsExcellent())
+            grade = 4;
+        else if (!mood && !student.getIsExcellent())
+            grade = rand() % 2 + 2;
         student.giveGrade(grade);
     }
+
+private:
+    bool mood = false; // 0 - bad; 1 - good;
 };
 
 int main()
@@ -49,7 +62,7 @@ int main()
     cout << (s1.getIsExcellent() ? "Excellent Student!" : "Not excellent Student.") << endl;
 
     Teacher t1;
-    t1.giveGradeToStudent(s1, 5);
+    t1.giveGradeToStudent(s1);
 
     for (int i = 0; i < s1.getGrades()->size(); i++) {
         cout << s1.getGrades()->at(i) << " ";
