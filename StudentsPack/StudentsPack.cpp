@@ -40,6 +40,12 @@ public:
         int seed = rand() % 100;
         if (seed < 20) setIsEvil(true);
         else if (seed > 80) setIsKind(true);
+
+        seed = rand() % 100;
+        if (seed < 20) constGradeMoodCount = 3;
+        else if (seed > 80) constGradeMoodCount = 7;
+        gradeMoodCount = constGradeMoodCount;
+        cout << "ConstGradeMoodCount = " << constGradeMoodCount << endl;
     }
 
     bool getMood() { return mood; }
@@ -71,7 +77,13 @@ public:
                 grade = rand() % 2 + 2;
             student->giveGrade(grade);
         }
-
+        
+        if (gradeMoodCount > 0) gradeMoodCount--;
+        else {
+            mood = rand() % 2;
+            cout << "Teacher have " << (mood ? "good " : "bad ") << "mood now." << endl;
+            gradeMoodCount = constGradeMoodCount;
+        }
         return grade;
     }
 
@@ -79,6 +91,8 @@ private:
     bool mood = false; // 0 - bad; 1 - good;
     bool isKind = false;
     bool isEvil = false;
+    int constGradeMoodCount = 5;
+    int gradeMoodCount = 5;
 };
 
 class Lesson {
@@ -132,6 +146,7 @@ int main()
     Lesson* l1 = new Lesson;
     l1->setTeacher(t1);
     l1->addStudent(s1); l1->addStudent(s2); l1->addStudent(s3); l1->addStudent(s4);
+    l1->beginLesson(0);
     l1->beginLesson(0);
     cout << "S1 - "; s1->printGrades();
     cout << "S2 - "; s2->printGrades();
