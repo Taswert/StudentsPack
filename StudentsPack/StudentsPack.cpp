@@ -23,10 +23,15 @@ public:
         grades.push_back(grade);
         checkIsExcellentNow();
     }
-
+    void printGrades() {
+        for (int i = 0; i < grades.size(); i++) {
+            cout << grades.at(i) << " ";
+        }
+        cout << endl;
+    }
 private:
     vector<int> grades;
-    bool isExcellent = false;
+    bool isExcellent = true;
 };
 
 class Teacher {
@@ -34,38 +39,81 @@ public:
     bool getMood() { return mood; }
     void setMood(bool newMood) { mood = newMood; }
 
-    void giveGradeToStudent(Student& student) {
-        srand(time(nullptr));
+    int giveGradeToStudent(Student* student) {
         int grade = 5;
-        if (!mood && student.getIsExcellent())
+        if (!mood && student->getIsExcellent())
             grade = rand() % 2 + 4;
-        else if (mood && !student.getIsExcellent())
+        else if (mood && !student->getIsExcellent())
             grade = 4;
-        else if (!mood && !student.getIsExcellent())
+        else if (!mood && !student->getIsExcellent())
             grade = rand() % 2 + 2;
-        student.giveGrade(grade);
+        student->giveGrade(grade);
+        return grade;
     }
 
 private:
     bool mood = false; // 0 - bad; 1 - good;
 };
 
+class Lesson {
+public:
+    Teacher* getTeacher() { return teacher; }
+    void setTeacher(Teacher* newTeacher) { teacher = newTeacher; }
+
+    void addStudent(Student* student) { students.push_back(student); }
+    void clearStudents() { students.clear(); }
+
+    void beginLesson(bool showLessonResult) {
+        if (!teacher) {
+            cout << "Lesson can't begin without Teacher!" << endl;
+            return;
+        }
+        if (students.empty()) {
+            cout << "Lesson can't begin without Students!" << endl;
+            return;
+        }
+        cout << "Lesson begins!" << endl;
+        int gradeCount = (teacher->getMood() ? rand() % 4 : rand() % 5 + 2); // good mood: 0-3 / bad mood: 2-6
+        for (int i = gradeCount; i > 0; i--) {
+            int studentIndex = rand() % students.size();
+            if (showLessonResult) cout << "Student number " << studentIndex << " got grade " << teacher->giveGradeToStudent(students.at(studentIndex)) << endl;
+            else teacher->giveGradeToStudent(students.at(studentIndex));
+        }
+        cout << "Lesson is over! Total grades: " << gradeCount << endl;
+    }
+private:
+    Teacher* teacher;
+    std::vector<Student*> students;
+};
+
 int main()
 {
-    Student s1;
-    s1.giveGrade(4);
-    s1.giveGrade(5);
-    for (int i = 0; i < s1.getGrades()->size(); i++) {
-        cout << s1.getGrades()->at(i) << " ";
-    }
-    cout << endl;
-    cout << (s1.getIsExcellent() ? "Excellent Student!" : "Not excellent Student.") << endl;
+    srand(time(nullptr));
 
-    Teacher t1;
-    t1.giveGradeToStudent(s1);
+    Student* s1 = new Student; Student* s2 = new Student; Student* s3 = new Student; Student* s4 = new Student;
+    s1->giveGrade(4);
+    s1->giveGrade(5);
+    s1->printGrades();
+    cout << (s1->getIsExcellent() ? "Excellent Student!" : "Not excellent Student.") << endl;
 
-    for (int i = 0; i < s1.getGrades()->size(); i++) {
-        cout << s1.getGrades()->at(i) << " ";
-    }
-    cout << endl;
+    Teacher* t1 = new Teacher;
+    t1->giveGradeToStudent(s1);
+
+    s1->printGrades();
+    cout << endl << endl;
+
+    Lesson* l1 = new Lesson;
+    l1->setTeacher(t1);
+    l1->addStudent(s1); l1->addStudent(s2); l1->addStudent(s3); l1->addStudent(s4);
+    l1->beginLesson(0);
+    cout << "S1 - "; s1->printGrades();
+    cout << "S2 - "; s2->printGrades();
+    cout << "S3 - "; s3->printGrades();
+    cout << "S4 - "; s4->printGrades();
+
+
+
+    delete s1; delete s2; delete s3; delete s4;
+    delete t1;
+    delete l1;
 }
