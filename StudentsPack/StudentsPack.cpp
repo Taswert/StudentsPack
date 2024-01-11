@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstdlib>
 using namespace std;
+class Parent;
 
 class Student {
 public:
@@ -36,10 +37,13 @@ public:
         }
         cout << endl;
     }
+    Parent* getParent() { return parent; }
+    void setParent(Parent* newParent) { parent = newParent; }
 private:
     vector<int> grades;
     bool isExcellent = true;
     std::string name;
+    Parent* parent;
 };
 
 class Teacher {
@@ -103,6 +107,13 @@ private:
     int gradeMoodCount = 5;
 };
 
+struct LessonInfo {
+public:
+    std::vector<Student*> wasOnLessonStudents;
+    std::vector<Student*> gotGradeStudents;
+    Teacher* teacher;
+};
+
 class Lesson {
 public:
     Teacher* getTeacher() { return teacher; }
@@ -111,14 +122,16 @@ public:
     void addStudent(Student* student) { students.push_back(student); }
     void clearStudents() { students.clear(); }
 
-    void beginLesson(bool showLessonResult) {
+    LessonInfo* beginLesson(bool showLessonResult) {
+        auto li = new LessonInfo;
+
         if (!teacher) {
             cout << "Lesson can't begin without Teacher!" << endl;
-            return;
+            return nullptr;
         }
         if (students.empty()) {
             cout << "Lesson can't begin without Students!" << endl;
-            return;
+            return nullptr;
         }
         cout << "Lesson begins!" << endl;
         int gradeCount = (teacher->getMood() ? rand() % 4 : rand() % 5 + 2); // good mood: 0-3 / bad mood: 2-6
@@ -126,8 +139,17 @@ public:
             int studentIndex = rand() % students.size();
             if (showLessonResult) cout << "Student number " << studentIndex << " got grade " << teacher->giveGradeToStudent(students.at(studentIndex)) << endl;
             else teacher->giveGradeToStudent(students.at(studentIndex));
+            bool isInVector = false;
+            for (int j = 0; j < li->gotGradeStudents.size(); j++) {
+                if (students.at(studentIndex) == li->gotGradeStudents.at(j)) isInVector = true;
+            }
+            if (!isInVector)
+                li->gotGradeStudents.push_back(students.at(studentIndex));
         }
+        li->teacher = teacher;
+        li->wasOnLessonStudents = students;
         cout << "Lesson is over! Total grades: " << gradeCount << endl;
+        return li;
     }
 private:
     Teacher* teacher;
@@ -186,6 +208,7 @@ public:
 
     void addChild(Student* child) {
         childs.push_back(child);
+        child->setParent(this);
     }
 
     bool getMood() { return mood; }
@@ -195,9 +218,63 @@ private:
     std::vector<Student*> childs;
 };
 
+class ParentsGathering {
+public:
+    void addParent(Parent* newParent) { parents.push_back(newParent); }
+    void clearParents() { parents.clear(); }
+
+    void addTeacher(Teacher* newTeacher) { teachers.push_back(newTeacher); }
+    void clearTeachers() { teachers.clear(); }
+
+    void beginGathering(std::vector<LessonInfo*> lessons) {
+        std::vector<Student*> missing;
+        cout << "Gathering begins!" << endl;
+        for (int i = 0; i < lessons.size(); i++) {
+            cout << "Lesson " << i+1 << ":" << endl;
+            bool isDiscussed = false;
+            for (int j = 0; j < teachers.size(); j++) {
+                if (lessons.at(i)->teacher == teachers.at(j)) isDiscussed = true;
+            }
+
+            if (isDiscussed) {
+                for (int j = 0; j < lessons.at(i)->gotGradeStudents.size(); j++) {
+                    bool isSkippingStudent = true;
+                    for (int o = 0; o < parents.size(); o++) {
+                        if (parents.at(o) == lessons.at(i)->gotGradeStudents.at(j)->getParent())
+                            isSkippingStudent = false;
+                    }
+                    if (isSkippingStudent) {
+                        bool isInVector = false;
+                        for (int i1 = 0; i1 < missing.size(); i1++) {
+                            if (missing.at(i1) == lessons.at(i)->gotGradeStudents.at(j)) isInVector = true;
+                        }
+                        if (!isInVector)
+                            missing.push_back(lessons.at(i)->gotGradeStudents.at(j));
+                    }
+                        
+                    else
+                        lessons.at(i)->gotGradeStudents.at(j)->getParent()->speakAboutExact(lessons.at(i)->gotGradeStudents.at(j));
+                }
+            }
+            cout << endl;
+        }
+        if (!missing.empty()) {
+            cout << "Parents of those students are missing:" << endl;
+            for (int i = 0; i < missing.size(); i++) {
+                cout << missing.at(i)->getName() << endl;
+            }
+        }
+        cout << "Gathering is over!" << endl;
+    }
+private:
+    std::vector<Parent*> parents;
+    std::vector<Teacher*> teachers;
+};
+
 int main()
 {
     srand(time(nullptr));
+    std::vector<LessonInfo*> lessonsVector;
 
     Student* s1 = new Student("John"); Student* s2 = new Student("Alex"); Student* s3 = new Student("Kate"); Student* s4 = new Student("Rebecca");
     s1->giveGrade(4);
@@ -215,8 +292,8 @@ int main()
     Lesson* l1 = new Lesson;
     l1->setTeacher(t1);
     l1->addStudent(s1); l1->addStudent(s2); l1->addStudent(s3); l1->addStudent(s4);
-    l1->beginLesson(0);
-    l1->beginLesson(0);
+    lessonsVector.push_back(l1->beginLesson(0));
+    lessonsVector.push_back(l1->beginLesson(0));
     cout << "S1 - "; s1->printGrades();
     cout << "S2 - "; s2->printGrades();
     cout << "S3 - "; s3->printGrades();
@@ -239,10 +316,16 @@ int main()
     p1->speakAboutExact(s4);
 
     p2->speakAboutEach();
+    cout << endl << endl;
+    auto g1 = new ParentsGathering;
+    g1->addParent(p1);
+    g1->addTeacher(t1);
+    g1->beginGathering(lessonsVector);
 
 
     delete s1; delete s2; delete s3; delete s4;
     delete t1;
     delete l1;
     delete p1; delete p2;
+    delete g1;
 }
