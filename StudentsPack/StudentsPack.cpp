@@ -36,23 +36,49 @@ private:
 
 class Teacher {
 public:
+    Teacher() {
+        int seed = rand() % 100;
+        if (seed < 20) setIsEvil(true);
+        else if (seed > 80) setIsKind(true);
+    }
+
     bool getMood() { return mood; }
     void setMood(bool newMood) { mood = newMood; }
 
+    bool getIsEvil() { return isEvil; }
+    void setIsEvil(bool isIt) { 
+        isEvil = isIt;
+        if (isIt) isKind = false;
+    }
+    bool getIsKind() { return isKind; }
+    void setIsKind(bool isIt) {
+        isKind = isIt;
+        if (isIt) isEvil = false;
+    }
+
     int giveGradeToStudent(Student* student) {
         int grade = 5;
-        if (!mood && student->getIsExcellent())
-            grade = rand() % 2 + 4;
-        else if (mood && !student->getIsExcellent())
-            grade = 4;
-        else if (!mood && !student->getIsExcellent())
-            grade = rand() % 2 + 2;
-        student->giveGrade(grade);
+        if (isKind)
+            student->giveGrade(5);
+        else if (isEvil)
+            student->giveGrade(2);
+        else {
+            if (!mood && student->getIsExcellent())
+                grade = rand() % 2 + 4;
+            else if (mood && !student->getIsExcellent())
+                grade = 4;
+            else if (!mood && !student->getIsExcellent())
+                grade = rand() % 2 + 2;
+            student->giveGrade(grade);
+        }
+
         return grade;
     }
 
 private:
     bool mood = false; // 0 - bad; 1 - good;
+    bool isKind = false;
+    bool isEvil = false;
 };
 
 class Lesson {
@@ -97,6 +123,7 @@ int main()
     cout << (s1->getIsExcellent() ? "Excellent Student!" : "Not excellent Student.") << endl;
 
     Teacher* t1 = new Teacher;
+    cout << (t1->getIsKind() ? "Teacher is kind :)" : (t1->getIsEvil() ? "Teacher is evil :(" : "Teacher is normal.")) << endl;
     t1->giveGradeToStudent(s1);
 
     s1->printGrades();
